@@ -99,7 +99,7 @@
           (find-by-index (cdr counters) index))))
 
 ; Functie helper care primeste o casa updatata, sterge versiunea veche din lista, apoi o adauga pe cea noua la inceput
-; si dupa le sorteaza dupa index
+; si dupa le sorteaza dupa index pentru a mentine ordinea
 (define (update-counter new-C counters)
   (sort (append (remove (find-by-index counters (counter-index new-C)) counters) (list new-C)) <= #:key counter-index))
 
