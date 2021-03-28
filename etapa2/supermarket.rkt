@@ -35,8 +35,8 @@
 
 
 ; intoarce casa cu index dat sau counters daca aceasta nu exista
-; (car filter) ptc filter intoarce o lista
-; si vreau doar primul element
+; (car filter) pentru ca filter intoarce o lista
+; si vrem doar primul element
 (define (search-by-index counters index)
   (if (null? (filter (lambda (C)
                        (if (equal? (counter-index C) index)
@@ -47,6 +47,7 @@
                      (if (equal? (counter-index C) index)
                          #t
                          #f)) counters))))
+
 
 ; intoarce lista initiala daca nu exista casa cu index dat
 ; sau aplica functia f pe casa gasita iar apoi traverseaza lista folosind
@@ -237,6 +238,7 @@
                                                (car (min-et (remove-empty-counters fast-counters)))) slow-counters))) ; index de cautat si aplicat lambda
          ])))
 
+
 ; helper care scoate casele ce nu au clienti din lista
 (define (remove-empty-counters counters)
   (filter (lambda (C)
@@ -245,10 +247,12 @@
                 #t)
             ) counters))
 
+
 ; functie ce returneaza media tt pe toate casele
 (define (average-tt fast-counters slow-counters)
   (/ (foldl (lambda (C acc)
               (+ (counter-tt C) acc)) 0 (append fast-counters slow-counters)) (counter-index (car (reverse slow-counters)))))
+
 
 ; functie ce adauga slow-counter pana cand conditia mediei e indeplinita
 (define (add-slow-counter fast-counters slow-counters average)
