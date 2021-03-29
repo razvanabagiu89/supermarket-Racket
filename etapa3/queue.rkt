@@ -6,6 +6,7 @@
 (provide enqueue)
 (provide dequeue)
 (provide top)
+(provide queue-size)
 
 (provide (struct-out queue)) ; pentru testare
 
@@ -91,7 +92,6 @@
       (struct-copy queue q [left (cdr (queue-left q))] [size-l (sub1 (queue-size-l q))])))
      
 
-
 ; TODO
 ; Implementați o funcție care obține primul element dintr-o coadă nevidă
 ; (nu verificați că e nevidă, pe coada vidă este firesc să dea eroare).
@@ -102,3 +102,9 @@
       (car (reverse (queue-right q)))
       ; il ia pe primul din left
       (car (queue-left q))))
+
+
+; calculeaza size-ul total
+(define (queue-size q)
+  (+ (queue-size-l q) (queue-size-r q)))
+

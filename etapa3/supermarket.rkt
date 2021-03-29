@@ -1,3 +1,6 @@
+; Abagiu Ioan-Razvan
+; 321CD
+
 #lang racket
 (require racket/match)
 (require "queue.rkt")
@@ -36,10 +39,10 @@
   (make-counter index 0 0 empty-queue))
 
 
-; identica cu etapa2
+; identic etapa2
 ; intoarce casa cu index dat sau counters daca aceasta nu exista
-; (car filter) ptc filter intoarce o lista
-; si vreau doar primul element
+; (car filter) pentru ca filter intoarce o lista
+; si vrem doar primul element
 (define (search-by-index counters index)
   (if (null? (filter (lambda (C)
                        (if (equal? (counter-index C) index)
@@ -52,6 +55,7 @@
                          #f)) counters))))
 
 
+; identic etapa2
 ; intoarce lista initiala daca nu exista casa cu index dat
 ; sau aplica functia f pe casa gasita iar apoi traverseaza lista folosind
 ; foldl si retine in acumulator casele, daca este casa cu index dat o
@@ -65,7 +69,7 @@
                             (cons C acc))) '() counters))))
 
 
-; identica etapa2
+; identic etapa2
 ; functie curry primind ca argument nr de minute
 ; apoi se reaplica pe o casa de marcat
 (define (tt+ minutes)
@@ -73,7 +77,7 @@
     (struct-copy counter C [tt (+ (counter-tt C) minutes)])))
 
 
-; identica etapa2
+; identic etapa2
 ; acelasi comportament ca functia tt+
 (define (et+ minutes)
   (lambda (C)
@@ -112,12 +116,14 @@
 
 
 
+; identic etapa2
 ; calculeaza tt din persoanele din queue a unei case si intoarce noua casa cu tt actualizat
 (define (sum-of-queue-tt C)
   (struct-copy counter C [tt (foldl (lambda (pair acc)
                                       (+ (cdr pair) acc)) 0 (append (queue-left (counter-queue C)) (queue-right (counter-queue C))))]))
 
 
+; identic etapa2
 ; elimina prima persoana din queue si actualizeaza et cu cel al urmatoarei persoane
 ; daca nu exista, cu 0
 ; tt actualizeaza prin suma tuturor n-items din queue
@@ -182,11 +188,11 @@
   (serve-helper requests fast-counters slow-counters '()))
 
 
-; return: (cons(lista cronologica) . (lista caselor))
+; functie apelata de functia serve care contine in plus parametrul de acumulator
 (define (serve-helper requests fast-counters slow-counters acc)
 
   (if (null? requests)
-      (cons acc (append fast-counters slow-counters)) ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      (cons acc (append fast-counters slow-counters))
       (match (car requests)
         [(list 'ensure average) ; update pe slow-counters
          (serve-helper (cdr requests) fast-counters (add-slow-counter fast-counters slow-counters average) acc)
@@ -208,11 +214,10 @@
              (serve-helper (cdr requests) (update (et+ minutes) (update (tt+ minutes) fast-counters index) index) slow-counters acc))    
          ]
         [minutes
-         (serve-helper (cdr requests) (extract-fast-counters (get-counters (map (pass-time-counter minutes '()) (append fast-counters slow-counters))) (counter-index (car (reverse fast-counters))))
+         (serve-helper (cdr requests)
+                       (extract-fast-counters (get-counters (map (pass-time-counter minutes '()) (append fast-counters slow-counters))) (counter-index (car (reverse fast-counters))))
                        (extract-slow-counters (get-counters (map (pass-time-counter minutes '()) (append fast-counters slow-counters))) (counter-index (car slow-counters)))
                        (append acc (get-acc (map (pass-time-counter minutes '()) (append fast-counters slow-counters)))))
-                       
-         
          ]
         )))
 
@@ -233,10 +238,7 @@
       ))
 
 
-(define (queue-size q)
-  (+ (queue-size-l q) (queue-size-r q)))
-
-
+; functie similara cu pass-time-through-counter dar mai complexa si adaptata pentru a o folosi in serve
 (define (pass-time-counter minutes acc)
   (lambda (C)
     (if (equal? (counter-et C) 0) ; are deja et = 0?
@@ -244,7 +246,7 @@
         (cons acc C)
         ; nu
         (if (> (- (counter-et C) minutes) 0) ; et - minutes > 0?
-            ; da, return cu et = et - minutes, tt = tt - minutes tot ca cons
+            ; da, return cu et = et - minutes, tt = tt - minutes
             (cons acc (struct-copy counter C [tt (- (counter-tt C) minutes)] [et (- (counter-et C) minutes)]))
             ; nu, deci et - minutes <= 0
             ; avem empty-queue?
@@ -260,53 +262,31 @@
                     ; nu
                     (cons (append acc (list (cons (counter-index C) (car (top (counter-queue C)))))) (struct-copy counter C [tt (- (counter-tt C) (counter-et C))] [et 0] [queue (dequeue (counter-queue C))]))))))))
 
-            
+
+; functie care extrage acumulatorul total
 (define (get-acc list-map-result)
   (foldl (lambda (element acc)
            (append acc (car element))) '() list-map-result))
 
 
+; functie care extrage toate casele
 (define (get-counters list-map-result)
   (foldl (lambda (element acc)
            (append acc (list (cdr element)))) '() list-map-result))
 
-                      
+
+; functie care extrage casele fast dintr-o lista de case
 (define (extract-fast-counters list last-idx)
-  (sort (filter (lambda (C)
+  (filter (lambda (C)
             (if (<= (counter-index C) last-idx)
                 #t
                 #f
-                )) list) <= #:key counter-index))
+                )) list))
 
-; first-idx = last-idx + 1
+
+; functie care extrage casele slow dintr-o lista de case
 (define (extract-slow-counters list first-idx)
-  (sort (filter (lambda (C)
+  (filter (lambda (C)
             (if (>= (counter-index C) first-idx)
                 #t
-                #f)) list) <= #:key counter-index))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-;(define C1 (empty-counter 1))
-;(define C2 (make-counter 2 12 5 (queue '() '((geo . 7) (lia . 5)) 0 2))) ; testing
-;(define C2 (empty-counter 2))
-;(define C3 (empty-counter 3))
-;(define C4 (empty-counter 4))
-;(define C5 (make-counter 5 12 8 (queue '((remus . 6) (vivi . 4)) '() 2 0)))
-
-;(map (pass-time-counter 1 '()) (list C1 C2 C3 C4 C5))
-;`--------------------------------------------------------
-;(map (pass-time-counter 1 '()) (sort (list C1 C2 C3 C4 C5) <= #:key counter-et))
-
-;(get-acc (list (cons '((1 . razvan)) (counter 1 0 0 (queue '() '() 0 0))) (cons '((2 . lia) (2 . geo)) (counter 2 0 0 (queue '() '() 0 0))))) ; good
-;(get-counters (list (cons '((1 . razvan)) (counter 1 0 0 (queue '() '() 0 0))) (cons '((2 . lia) (2 . geo)) (counter 2 0 0 (queue '() '() 0 0))))) ; good
-;(extract-fast-counters (get-counters (list (cons '((1 . razvan)) (counter 1 0 0 (queue '() '() 0 0))) (cons '((2 . lia) (2 . geo)) (counter 2 0 0 (queue '() '() 0 0))))) 1) ; good
-
-;((pass-time-counter 5 '()) C1)
-;
-;(serve '((ana 12) 4 (mia 2) 1 (mara 4) 1 10)
-;       (list C1)
-;       (list C2 C3 C4))
-
-
+                #f)) list))
