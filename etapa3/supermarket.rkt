@@ -222,9 +222,7 @@
                                              (if (null? element)
                                                  #f
                                                  #t))
-                                           (car (for-loop '() (append fast-counters slow-counters) 1 minutes)))))
-         
-         ])))
+                                           (car (for-loop '() (append fast-counters slow-counters) 1 minutes)))))])))
 
 
 ; functie ce returneaza media tt pe toate casele
@@ -270,6 +268,7 @@
             (if (>= (counter-index C) first-idx)
                 #t
                 #f)) list))
+
 
 ; functie ce simuleaza un for loop() si intoarce un acumulator
 ; folosita pentru trecerea timpului treptat pe la case
