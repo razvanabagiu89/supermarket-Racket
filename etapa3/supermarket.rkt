@@ -190,7 +190,6 @@
 
 ; functie apelata de functia serve care contine in plus parametrul de acumulator
 (define (serve-helper requests fast-counters slow-counters acc)
-
   (if (null? requests)
       (cons acc (append fast-counters slow-counters))
       (match (car requests)
@@ -214,12 +213,18 @@
              (serve-helper (cdr requests) (update (et+ minutes) (update (tt+ minutes) fast-counters index) index) slow-counters acc))    
          ]
         [minutes
+        
          (serve-helper (cdr requests)
-                       (extract-fast-counters (get-counters (map (pass-time-counter minutes '()) (append fast-counters slow-counters))) (counter-index (car (reverse fast-counters))))
-                       (extract-slow-counters (get-counters (map (pass-time-counter minutes '()) (append fast-counters slow-counters))) (counter-index (car slow-counters)))
-                       (append acc (get-acc (map (pass-time-counter minutes '()) (append fast-counters slow-counters)))))
-         ]
-        )))
+                       (extract-fast-counters (cdr (for-loop '() (append fast-counters slow-counters) 1 minutes)) (counter-index (car (reverse fast-counters))))
+                       (extract-slow-counters (cdr (for-loop '() (append fast-counters slow-counters) 1 minutes)) (counter-index (car slow-counters)))
+                       
+                       (append acc (filter (lambda (element) ; scoate acumulatorii auxiliari nuli
+                                             (if (null? element)
+                                                 #f
+                                                 #t))
+                                           (car (for-loop '() (append fast-counters slow-counters) 1 minutes)))))
+         
+         ])))
 
 
 ; functie ce returneaza media tt pe toate casele
@@ -238,41 +243,16 @@
       ))
 
 
-; functie similara cu pass-time-through-counter dar mai complexa si adaptata pentru a o folosi in serve
-(define (pass-time-counter minutes acc)
-  (lambda (C)
-    (if (equal? (counter-et C) 0) ; are deja et = 0?
-        ; da, return intre acumulator si C
-        (cons acc C)
-        ; nu
-        (if (> (- (counter-et C) minutes) 0) ; et - minutes > 0?
-            ; da, return cu et = et - minutes, tt = tt - minutes
-            (cons acc (struct-copy counter C [tt (- (counter-tt C) minutes)] [et (- (counter-et C) minutes)]))
-            ; nu, deci et - minutes <= 0
-            ; avem empty-queue?
-            (if (queue-empty? (counter-queue C))
-                ; da, return la C cu tt si et actualizat
-                (cons acc (struct-copy counter C [tt (- (counter-tt C) (counter-et C))] [et 0])) ; tt = tt - et, et = 0
-                ; nu
-                (if (> (queue-size (counter-queue C)) 1) ; avem queue-size > 1?
-                    ; da
-                    ((pass-time-counter (- minutes (counter-et C)) (append acc (list (cons (counter-index C) (car (top (counter-queue C))))))) (struct-copy counter C [tt (- (counter-tt C) (counter-et C))]
-                                                                                                                                                            [et (cdr (top (dequeue (counter-queue C))))]
-                                                                                                                                                            [queue (dequeue (counter-queue C))]))
-                    ; nu
-                    (cons (append acc (list (cons (counter-index C) (car (top (counter-queue C)))))) (struct-copy counter C [tt (- (counter-tt C) (counter-et C))] [et 0] [queue (dequeue (counter-queue C))]))))))))
-
-
 ; functie care extrage acumulatorul total
-(define (get-acc list-map-result)
+(define (get-acc from-result)
   (foldl (lambda (element acc)
-           (append acc (car element))) '() list-map-result))
+           (append acc (list (car element)))) '() from-result))
 
 
 ; functie care extrage toate casele
-(define (get-counters list-map-result)
+(define (get-counters from-result)
   (foldl (lambda (element acc)
-           (append acc (list (cdr element)))) '() list-map-result))
+           (append acc (list (cdr element)))) '() from-result))
 
 
 ; functie care extrage casele fast dintr-o lista de case
@@ -290,3 +270,42 @@
             (if (>= (counter-index C) first-idx)
                 #t
                 #f)) list))
+
+; functie ce simuleaza un for loop() si intoarce un acumulator
+; folosita pentru trecerea timpului treptat pe la case
+(define (for-loop acc counters index stop-index)
+  
+  (if (equal? index (add1 stop-index))
+      (cons acc counters) ; acumulator final si casele
+      
+      (for-loop (append acc (get-acc (pass-one-minute counters)))
+                (get-counters (pass-one-minute counters))
+                (add1 index)
+                stop-index)))
+
+; functie ce simuleaza trecerea a 1 minut pe la fiecare casa
+(define (pass-one-minute counters)
+  (foldl (lambda (C acc1)
+             
+           (if (equal? (counter-et C) 0) ; are deja et = 0?
+               ; da, return intre acumulator si C
+               (append acc1 (list (cons '() C)))
+               ; nu
+               (if (> (- (counter-et C) 1) 0) ; et - 1 > 0?
+                   ; da, return cu et = et - 1, tt = tt - 1
+                   (append acc1 (list (cons '() (struct-copy counter C [tt (- (counter-tt C) 1)] [et (- (counter-et C) 1)]))))
+                   ; nu, deci et - 1 <= 0
+                   ; avem empty-queue?
+                   (if (queue-empty? (counter-queue C))
+                       ; da, return la C cu tt si et actualizat
+                       (append acc1 (list (cons '() (struct-copy counter C [tt (- (counter-tt C) 1)] [et 0])))) ; tt = tt - et, et = 0
+                       ; nu
+                       (if (> (queue-size (counter-queue C)) 1) ; avem queue-size > 1?
+                           ; da
+                           (append acc1 (list (cons (cons (counter-index C) (car (top (counter-queue C)))) (struct-copy counter C [tt (- (counter-tt C) 1)]
+                                                                                                                        [et (cdr (top (dequeue (counter-queue C))))]
+                                                                                                                        [queue (dequeue (counter-queue C))]))))
+                           ; nu
+                           (append acc1 (list (cons (cons (counter-index C) (car (top (counter-queue C)))) (struct-copy counter C [tt (- (counter-tt C) 1)]
+                                                                                                                        [et 0]
+                                                                                                                        [queue (dequeue (counter-queue C))]))))))))) '() counters))

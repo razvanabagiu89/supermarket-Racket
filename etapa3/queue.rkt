@@ -107,4 +107,3 @@
 ; calculeaza size-ul total
 (define (queue-size q)
   (+ (queue-size-l q) (queue-size-r q)))
-
