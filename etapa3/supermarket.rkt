@@ -213,7 +213,6 @@
              (serve-helper (cdr requests) (update (et+ minutes) (update (tt+ minutes) fast-counters index) index) slow-counters acc))    
          ]
         [minutes
-        
          (serve-helper (cdr requests)
                        (extract-fast-counters (cdr (for-loop '() (append fast-counters slow-counters) 1 minutes)) (counter-index (car (reverse fast-counters))))
                        (extract-slow-counters (cdr (for-loop '() (append fast-counters slow-counters) 1 minutes)) (counter-index (car slow-counters)))
