@@ -71,28 +71,29 @@
 (define-struct queue (left right size-l size-r) #:transparent) 
 
 
-; DONE
+; TODO
 ; Definiți valoarea care reprezintă o structură queue goală.
 (define empty-queue
   (make-queue empty-stream '() 0 0))
 
 
-; DONE
+; TODO
 ; Implementați o funcție care verifică dacă o coadă este goală.
 (define (queue-empty? q)
   (and (equal? (queue-size-l q) 0) (equal? (queue-size-r q) 0)))
 
 
-; DONE
+; TODO
 ; Implementați funcția rotate, conform axiomelor de mai sus.
 ; Atenție: ce tip trebuie să aibă Acc? -> flux
+
 (define (rotate left right Acc)
   (if (stream-empty? left)
       (stream-cons (car right) Acc)
       (stream-cons (stream-first left) (rotate (stream-rest left) (cdr right) (stream-cons (car right) Acc)))))
   
 
-; DONE
+; TODO
 ; Implementați o funcție care adaugă un element la sfârșitul unei cozi.
 ; Veți întoarce coada actualizată.
 ; Atenție: în urma adăugării unui element, poate fi necesară o rotație!
@@ -104,7 +105,7 @@
       (struct-copy queue q [size-r (add1 (queue-size-r q))] [right (cons x (queue-right q))])))
 
 
-; DONE
+; TODO
 ; Implementați o funcție care scoate primul element dintr-o coadă nevidă
 ; (nu verificați că e nevidă, pe coada vidă este firesc să dea eroare).
 ; Veți întoarce coada actualizată.
@@ -117,7 +118,7 @@
       (struct-copy queue q [left (stream-rest (queue-left q))] [size-l (sub1 (queue-size-l q))])))
 
 
-; DONE
+; TODO
 ; Implementați o funcție care obține primul element dintr-o coadă nevidă
 ; (nu verificați că e nevidă, pe coada vidă este firesc să dea eroare).
 ; Veți întoarce elementul aflat la începutul cozii.

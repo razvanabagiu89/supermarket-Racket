@@ -10,7 +10,7 @@
 (define ITEMS 5)
 
 
-; DONE
+; TODO
 ; Aveți libertatea să vă structurați programul cum doriți (dar cu restricțiile
 ; de mai jos), astfel încât funcția serve să funcționeze conform specificației.
 ; 
@@ -22,11 +22,13 @@
 ; state
 ; 1 - casa deschisa
 ; 0 - casa inchisa
+
+
 (define (empty-counter index)
   (make-counter index 0 0 empty-queue 1))
   
   
-; DONE
+; TODO
 ; Implementați funcția care simulează fluxul clienților pe la case.
 ; ATENȚIE: Față de etapa 3, apare un nou tip de cerere, așadar
 ; requests conține 5 tipuri de cereri (cele moștenite din etapa 3 plus una nouă):
